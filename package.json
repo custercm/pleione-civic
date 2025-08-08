@@ -1,0 +1,23 @@
+{
+  "name": "pleione-civic",
+  "version": "1.0.0",
+  "description": "Minimal self-upgrading AI assistant with safe code generation and testing",
+  "dependencies": {
+    "fastapi": "^0.104.1",
+    "uvicorn": "^0.24.0",
+    "pydantic": "^2.5.0",
+    "requests": "^2.31.0",
+    "pytest": "^7.4.3"
+  },
+  "scripts": {
+    "setup": "./setup.sh",
+    "run": "./run.sh",
+    "stop": "./stop.sh", 
+    "implement": "./implement.sh",
+    "upgrade": "./upgrade.sh"
+  },
+  "requirements": {
+    "python": ">=3.10",
+    "lmstudio": "Running on localhost:1234"
+  }
+}
