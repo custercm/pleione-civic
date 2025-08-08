@@ -34,6 +34,22 @@
             background-color: #fff3e0;
             border-left: 4px solid #ff9800;
             font-style: italic;
+            position: relative;
+        }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #ff9800;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         input[type=text] {
             width: 70%;
@@ -97,8 +113,29 @@
     <div class="chat-window" id="chatWindow">
         <!-- Messages will appear here -->
     </div>
-    <input type="text" id="userInput" placeholder="Ask Pleione to add features or fix bugs...">
-    <button onclick="sendMessage()">Send</button>
-    <script src="./chat.js"></script>
+    
+    <div style="margin: 10px 0;">
+        <input type="text" id="userInput" placeholder="Ask Pleione to add features or fix bugs...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <div class="button-container">
+        <h3>Quick Actions</h3>
+        <button class="implement-btn" onclick="autoImplement()">Auto-Implement</button>
+        <button class="review-btn" onclick="reviewCode()">Review Code</button>
+    </div>
+
+    <div class="button-container self-update">
+        <div class="update-warning">⚠️ Self-Update Mode: Pleione will analyze and modify her own code</div>
+        <button class="safe-update-btn" onclick="selfUpdate()">Self-Update</button>
+        <button onclick="safeRollback()">Rollback</button>
+    </div>
+
+    <div class="button-container">
+        <h3>Context Files</h3>
+        <div id="fileList">Loading files...</div>
+    </div>
+
+    <script src="/static/chat.js"></script>
 </body>
 </html>

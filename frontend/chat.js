@@ -35,8 +35,8 @@ function sendMessage() {
     // Display user message
     addMessage(`You: ${message}`, 'user-message');
     
-    // Show loading indicator
-    const loadingDiv = addMessage('Pleione: Analyzing request and reading relevant files...', 'ai-message loading');
+    // Show clean loading indicator with spinner
+    const loadingDiv = addMessage('<span class="spinner"></span>Processing...', 'ai-message loading');
     
     // Determine if this is a self-update request and get files to include
     const isUpdate = isSelfUpdateRequest(message);
@@ -57,16 +57,21 @@ function sendMessage() {
             files_to_include: filesToInclude
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
     .then(data => {
         // Remove loading indicator
         chatWindow.removeChild(loadingDiv);
         
-        if (data.response.error) {
-            addMessage(`Pleione: ${data.response.error}`, 'ai-message');
-        } else {
+        if (data.error) {
+            addMessage(`Pleione: ${data.error}`, 'ai-message');
+        } else if (data.response) {
             // Show the AI response
-            addMessage(`Pleione: ${data.response.response || 'Code generated successfully!'}`, 'ai-message');
+            addMessage(`Pleione: ${data.response.response || data.response}`, 'ai-message');
             
             // Show files created
             if (data.response.created_files && data.response.created_files.length > 0) {
@@ -145,7 +150,11 @@ function initiateSafeUpdate(codeData, originalFiles) {
 function addMessage(text, className) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${className}`;
-    messageDiv.textContent = text;
+    if (text.includes('<span class="spinner">')) {
+        messageDiv.innerHTML = text;
+    } else {
+        messageDiv.textContent = text;
+    }
     chatWindow.appendChild(messageDiv);
     chatWindow.scrollTop = chatWindow.scrollHeight;
     return messageDiv; // Return for loading indicator removal
@@ -172,7 +181,7 @@ function addImplementButton(codeData) {
 }
 
 function autoImplement(codeData) {
-    addMessage('Pleione: Auto-implementing code...', 'ai-message');
+    const loadingDiv = addMessage('<span class="spinner"></span>Implementing...', 'ai-message loading');
     
     fetch('/api/implement', {
         method: 'POST',
@@ -186,6 +195,7 @@ function autoImplement(codeData) {
     })
     .then(response => response.json())
     .then(data => {
+        chatWindow.removeChild(loadingDiv);
         if (data.response.status === 'implemented') {
             addMessage(`🎉 ${data.response.message}`, 'ai-message');
             addMessage(`📁 Implemented files: ${data.response.files.join(', ')}`, 'ai-message');
@@ -194,6 +204,9 @@ function autoImplement(codeData) {
         }
     })
     .catch(error => {
+        if (loadingDiv.parentNode) {
+            chatWindow.removeChild(loadingDiv);
+        }
         addMessage(`Error during implementation: ${error}`, 'ai-message');
     });
 }
@@ -202,6 +215,81 @@ function reviewCode(codeData) {
     const reviewMsg = `📁 Generated files in sandbox:\n${codeData.created_files.join('\n')}\n\nPlease review the code, then use the shell command:\n./implement.sh`;
     addMessage(`Pleione: ${reviewMsg}`, 'ai-message');
 }
+
+function selfUpdate() {
+    const loadingDiv = addMessage('<span class="spinner"></span>Self-updating...', 'ai-message loading');
+    
+    fetch('/api/self-update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: "analyze_and_update"
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        chatWindow.removeChild(loadingDiv);
+        if (data.response) {
+            addMessage(`Pleione: ${data.response}`, 'ai-message');
+        }
+    })
+    .catch(error => {
+        if (loadingDiv.parentNode) {
+            chatWindow.removeChild(loadingDiv);
+        }
+        addMessage(`Error during self-update: ${error}`, 'ai-message');
+    });
+}
+
+function safeRollback() {
+    const loadingDiv = addMessage('<span class="spinner"></span>Rolling back...', 'ai-message loading');
+    
+    fetch('/api/self-update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: "rollback"
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        chatWindow.removeChild(loadingDiv);
+        if (data.response) {
+            addMessage(`Pleione: ${data.response}`, 'ai-message');
+        }
+    })
+    .catch(error => {
+        if (loadingDiv.parentNode) {
+            chatWindow.removeChild(loadingDiv);
+        }
+        addMessage(`Error during rollback: ${error}`, 'ai-message');
+    });
+}
+
+// Load file list on page load
+function loadFileList() {
+    fetch('/api/files')
+    .then(response => response.json())
+    .then(data => {
+        const fileListDiv = document.getElementById('fileList');
+        if (data.files) {
+            fileListDiv.innerHTML = data.files.map(file => 
+                `<label><input type="checkbox" value="${file}"> ${file}</label>`
+            ).join('<br>');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading file list:', error);
+        document.getElementById('fileList').innerHTML = 'Error loading files';
+    });
+}
+
+// Load files when page loads
+document.addEventListener('DOMContentLoaded', loadFileList);
 
 // Allow Enter key to send message
 userInput.addEventListener('keypress', function(event) {

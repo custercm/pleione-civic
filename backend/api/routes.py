@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from typing import Optional, List
 from ..models.llm_connector import generate_code_and_tests, auto_implement_code, list_project_files
 from ..models.safe_update import safe_self_update
 
@@ -7,7 +8,7 @@ router = APIRouter()
 
 class ChatRequest(BaseModel):
     prompt: str
-    files_to_include: list = None
+    files_to_include: Optional[List[str]] = None
 
 class ImplementRequest(BaseModel):
     sandbox_files: list

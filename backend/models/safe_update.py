@@ -95,7 +95,7 @@ def run_comprehensive_tests(staging_dir):
         os.chdir(staging_dir)
         
         # Run basic tests
-        result = subprocess.run(['python', '-m', 'pytest', 'backend/tests/', '-v'], 
+        result = subprocess.run(['python3', '-m', 'pytest', 'backend/tests/', '-v'], 
                               capture_output=True, text=True, timeout=60)
         results["basic_tests"] = result.returncode == 0
         if result.returncode != 0:
@@ -103,7 +103,7 @@ def run_comprehensive_tests(staging_dir):
         
         # Test API startup
         try:
-            result = subprocess.run(['python', '-c', 'from backend.main import app; print("API import successful")'], 
+            result = subprocess.run(['python3', '-c', 'from backend.main import app; print("API import successful")'], 
                                   capture_output=True, text=True, timeout=30)
             results["api_tests"] = result.returncode == 0
             if result.returncode != 0:
@@ -113,7 +113,7 @@ def run_comprehensive_tests(staging_dir):
         
         # Test LLM connector
         try:
-            result = subprocess.run(['python', '-c', 'from backend.models.llm_connector import get_llm_response; print("LLM connector import successful")'], 
+            result = subprocess.run(['python3', '-c', 'from backend.models.llm_connector import get_llm_response; print("LLM connector import successful")'], 
                                   capture_output=True, text=True, timeout=30)
             results["self_test"] = result.returncode == 0
             if result.returncode != 0:
@@ -124,7 +124,7 @@ def run_comprehensive_tests(staging_dir):
         # Integration test - try to start the server briefly
         try:
             # This would start the server for a few seconds to test it works
-            proc = subprocess.Popen(['python', '-m', 'uvicorn', 'backend.main:app', '--port', '8001'], 
+            proc = subprocess.Popen(['python3', '-m', 'uvicorn', 'backend.main:app', '--port', '8001'], 
                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             # Let it run for 3 seconds then kill it
             time.sleep(3)

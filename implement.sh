@@ -45,7 +45,7 @@ echo "🧪 Running tests..."
 
 # Run all tests in the test directory
 if [ -d "$TEST_DIR" ] && [ -n "$(ls -A $TEST_DIR 2>/dev/null)" ]; then
-    python -m pytest $TEST_DIR -v
+    python3 -m pytest $TEST_DIR -v
     TEST_EXIT_CODE=$?
     
     if [ $TEST_EXIT_CODE -eq 0 ]; then
